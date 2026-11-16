@@ -1,0 +1,100 @@
+#include <stdlib.h>
+#include <stdbool.h>
+
+typedef struct Node {
+    int val;
+    struct Node* next;
+} Node;
+
+typedef struct {
+    Node* front;
+    Node* rear;
+} Queue;
+
+typedef struct {
+    Queue q1;
+    Queue q2;
+} MyStack;
+
+void enqueue(Queue* q, int x) {
+    Node* newNode = malloc(sizeof(Node));
+    newNode->val = x;
+    newNode->next = NULL;
+
+    if (q->rear == NULL) {
+        q->front = newNode;
+        q->rear = newNode;
+    } else {
+        q->rear->next = newNode;
+        q->rear = newNode;
+    }
+}
+
+int dequeue(Queue* q) {
+    Node* temp = q->front;
+    int value = temp->val;
+
+    q->front = q->front->next;
+
+    if (q->front == NULL) {
+        q->rear = NULL;
+    }
+
+    free(temp);
+    return value;
+}
+
+int front(Queue* q) {
+    return q->front->val;
+}
+
+bool isEmpty(Queue* q) {
+    return q->front == NULL;
+}
+
+MyStack* myStackCreate() {
+    MyStack* stack = malloc(sizeof(MyStack));
+
+    stack->q1.front = NULL;
+    stack->q1.rear = NULL;
+    stack->q2.front = NULL;
+    stack->q2.rear = NULL;
+
+    return stack;
+}
+
+void myStackPush(MyStack* obj, int x) {
+    enqueue(&obj->q2, x);
+
+    while (!isEmpty(&obj->q1)) {
+        enqueue(&obj->q2, dequeue(&obj->q1));
+    }
+
+    Queue temp = obj->q1;
+    obj->q1 = obj->q2;
+    obj->q2 = temp;
+}
+
+int myStackPop(MyStack* obj) {
+    return dequeue(&obj->q1);
+}
+
+int myStackTop(MyStack* obj) {
+    return front(&obj->q1);
+}
+
+bool myStackEmpty(MyStack* obj) {
+    return isEmpty(&obj->q1);
+}
+
+void myStackFree(MyStack* obj) {
+    while (!isEmpty(&obj->q1)) {
+        dequeue(&obj->q1);
+    }
+
+    while (!isEmpty(&obj->q2)) {
+        dequeue(&obj->q2);
+    }
+
+    free(obj);
+}
